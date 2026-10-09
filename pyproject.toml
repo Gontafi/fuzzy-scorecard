@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fuzzyscore"
+version = "0.1.0"
+description = "Monotone fuzzy scorecards for credit risk: Ruspini partitions, cumulative terms, sparse non-negative logistic fit"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Alibek Gontabek", email = "Gontabek@gmail.com" }]
+requires-python = ">=3.10"
+keywords = ["credit scoring", "fuzzy logic", "monotone", "scorecard", "interpretable machine learning"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-cov>=4", "ruff>=0.4", "build"]
+
+[project.urls]
+Homepage = "https://github.com/Gontafi/fuzzy-scorecard"
+Issues = "https://github.com/Gontafi/fuzzy-scorecard/issues"
+
+[project.scripts]
+fuzzyscore = "fuzzyscore.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["fuzzyscore*"]
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=fuzzyscore --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W"]
