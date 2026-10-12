@@ -84,3 +84,15 @@ in under a minute in CI and is familiar to anyone who would audit the model.
 ## License
 
 MIT. See `LICENSE`.
+
+## Docker and Jenkins
+
+`Dockerfile` builds two targets: `base` (the installed package, entry point
+`fuzzyscore`) and `test` (adds the tests, pytest, pytest-cov and ruff).
+`Jenkinsfile` is a declarative pipeline that runs lint, unit tests, image
+build, smoke test and deployment to a local test container; `deploy/jenkins/`
+contains the Jenkins server definition (image, plugins, configuration as
+code). See Assignment 5 in `docs/` for the write-up.
+
+    docker build -t fuzzyscore .
+    docker run --rm fuzzyscore demo --n 5000

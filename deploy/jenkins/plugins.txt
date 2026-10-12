@@ -1,0 +1,12 @@
+configuration-as-code
+workflow-aggregator
+git
+github
+docker-workflow
+junit
+pipeline-stage-view
+timestamper
+ws-cleanup
+credentials-binding
+job-dsl
+matrix-auth

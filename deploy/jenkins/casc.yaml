@@ -1,0 +1,43 @@
+jenkins:
+  systemMessage: "Jenkins CI server for Assignment 5 (fuzzy-scorecard pipeline)"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+          name: "Alibek Asset"
+  authorizationStrategy:
+    globalMatrix:
+      entries:
+        - user:
+            name: "admin"
+            permissions:
+              - "Overall/Administer"
+        - group:
+            name: "anonymous"
+            permissions:
+              - "Overall/Read"
+              - "Job/Read"
+              - "View/Read"
+  remotingSecurity:
+    enabled: true
+unclassified:
+  location:
+    url: "http://localhost:8081/"
+    adminAddress: "Gontabek@gmail.com"
+jobs:
+  - script: >
+      multibranchPipelineJob('fuzzy-scorecard') {
+        displayName('fuzzy-scorecard (GitHub, Jenkinsfile)')
+        description('CI/CD for https://github.com/Gontafi/fuzzy-scorecard: lint, unit tests, Docker image, smoke test, deploy to test server.')
+        branchSources {
+          git {
+            id('fuzzy-scorecard-git')
+            remote('https://github.com/Gontafi/fuzzy-scorecard.git')
+          }
+        }
+        orphanedItemStrategy { discardOldItems { numToKeep(5) } }
+        triggers { periodicFolderTrigger { interval('2m') } }
+      }
