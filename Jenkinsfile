@@ -1,5 +1,5 @@
 // Declarative pipeline for the fuzzyscore package (Assignment 5).
-// Stages: checkout -> lint -> unit tests -> build Docker image -> smoke test
+// Stages: checkout -> build test image -> lint -> unit tests -> build Docker image -> smoke test
 //         -> deploy to the local test server (CD).
 pipeline {
     agent any
@@ -29,19 +29,32 @@ pipeline {
             }
         }
 
+        stage('Build test image') {
+            steps {
+                // One image carries the package, the tests and the dev tools, so
+                // every later stage runs against exactly the same bits.
+                sh 'docker build --target test -t "$TEST_IMAGE" .'
+            }
+        }
+
         stage('Lint') {
             steps {
-                sh 'docker run --rm -v "$PWD":/src -w /src python:3.12-slim sh -c "pip install -q ruff && ruff check . && ruff format --check ."'
+                sh 'docker run --rm --entrypoint ruff "$TEST_IMAGE" check .'
+                sh 'docker run --rm --entrypoint ruff "$TEST_IMAGE" format --check .'
             }
         }
 
         stage('Unit tests') {
             steps {
-                sh 'docker build --target test -t "$TEST_IMAGE" .'
-                sh 'docker run --rm -v "$PWD/reports":/app/reports "$TEST_IMAGE" -q --junitxml=reports/junit.xml --cov=fuzzyscore --cov-report=xml:reports/coverage.xml'
+                // No bind mounts: the Docker daemon lives on the host, so a path
+                // inside the Jenkins container would not resolve. The reports are
+                // copied out of the finished container instead.
+                sh 'docker rm -f "tests-$BUILD_NUMBER" || true'
+                sh 'docker run --name "tests-$BUILD_NUMBER" "$TEST_IMAGE" -q --junitxml=reports/junit.xml --cov=fuzzyscore --cov-report=xml:reports/coverage.xml --cov-report=term'
             }
             post {
                 always {
+                    sh 'rm -rf reports && docker cp "tests-$BUILD_NUMBER":/app/reports ./reports && docker rm -f "tests-$BUILD_NUMBER"'
                     junit 'reports/junit.xml'
                 }
             }
